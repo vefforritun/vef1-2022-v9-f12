@@ -1,29 +1,42 @@
-const header = document.querySelector('.layout__header');
-const main = document.querySelector('.layout__main');
+/* eslint-disable guard-for-in */
+import { el, empty } from './lib/helpers.js';
 
-async function onSearch(e) {
-  /* TODO útfæra */
+const AUTHOR_API = 'https://openlibrary.org/search/authors.json'
+
+
+function createAuthorsList(query) {
+  const list = document.createElement('ul');
+
+  const url = new URL(`${AUTHOR_API}?q=${query}`);
+
+  list.appendChild(list.appendChild(el('li', { class: 'foo' }, 'Sæki gögn...')))
+
+  fetch(url)
+    .then((response) => {
+      empty(list);
+      response.json().then((data) => {
+        for (const doc of data.docs) {
+          console.log(doc)
+
+          list.appendChild(list.appendChild(el('li', { class: 'foo' }, doc.name)))
+        }
+      })
+    }) 
+    .catch((error) => {
+      empty(list);
+      list.appendChild(list.appendChild(el('li', { class: 'foo' }, 'Villa!!')))
+      console.error('gat ekki sótt gögn', error);
+    })
+
+  return list;
 }
 
-const searchForm = createSearchInput(onSearch);
+function main(query) {
+  const mainElement = document.querySelector('main');
 
-header.appendChild(searchForm);
+  const authors = createAuthorsList(query);
 
-/**
- * Athugar hvaða síðu við erum á út frá query-string og birtir viðeigandi
- * gögn. Ef `id` er gefið er bók birt, ef `query` er gefið er leitarniðurstaða
- * birt, annars er forsíða birt.
- */
-function route() {
-  /* TODO útfæra */
+  mainElement.appendChild(authors)
 }
 
-/**
- * Bregst við því þegar við notum vafra til að fara til baka eða áfram.
- */
-window.onpopstate = () => {
-  /* TODO útfæra */
-};
-
-// Athugum í byrjun hvað eigi að birta.
-route();
+main('Stephen King');
