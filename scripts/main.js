@@ -3,40 +3,50 @@ import { el, empty } from './lib/helpers.js';
 
 const AUTHOR_API = 'https://openlibrary.org/search/authors.json'
 
+function createAuthor() {
+  
+}
 
-function createAuthorsList(query) {
+async function createAuthorsList(query, parent) {
   const list = document.createElement('ul');
 
   const url = new URL(`${AUTHOR_API}?q=${query}`);
 
-  list.appendChild(list.appendChild(el('li', { class: 'foo' }, 'Sæki gögn...')))
+  list.appendChild(list.appendChild(el('li', {}, 'Sæki gögn...')))
 
-  fetch(url)
-    .then((response) => {
-      empty(list);
-      response.json().then((data) => {
-        for (const doc of data.docs) {
-          console.log(doc)
+  parent.appendChild(list);
 
-          list.appendChild(list.appendChild(el('li', { class: 'foo' }, doc.name)))
-        }
-      })
-    }) 
-    .catch((error) => {
-      empty(list);
-      list.appendChild(list.appendChild(el('li', { class: 'foo' }, 'Villa!!')))
-      console.error('gat ekki sótt gögn', error);
-    })
+  let data = null
 
+  try {
+    const response = await fetch(url);
+
+    // data á að vera niðurstaða (JSON) frá API
+    data = await response.json(); 
+  } catch (err) {
+    console.error('Villa!', err);
+  }
+
+  empty(list);
+
+  if (data) {
+    if (data.docs.length === 0) {
+      list.appendChild(list.appendChild(el('li', {}, 'Ekkert fannst')))
+    }
+    
+    for (const doc of data.docs) {
+      list.appendChild(list.appendChild(el('li', {}, doc.name)))
+    }
+  } else {
+    list.appendChild(list.appendChild(el('li', {}, 'Villa við að sækja gögn')))
+  }
   return list;
 }
 
-function main(query) {
+async function main(query) {
   const mainElement = document.querySelector('main');
 
-  const authors = createAuthorsList(query);
-
-  mainElement.appendChild(authors)
+  await createAuthorsList(query, mainElement);
 }
 
-main('Stephen King');
+main('Stephen asdfasdfasdf');
